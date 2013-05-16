@@ -104,14 +104,7 @@ class ContextConfig( object ):
   
     missingKeys = set( self.MANDATORY_KEYS ).difference( set( contextConfig.keys() ) ) 
     if missingKeys:
-      return S_ERROR( 'Missing mandatory keys on endpointConfig %s' % str( missingKeys ) )
-
-#    self.log.info( '*' * 50 )
-#    self.log.info( 'Displaying context info' )
-#    for key, value in self.contextConfig.iteritems:
-#      self.log.info( '%s : %s' % ( key, value ) )
-#    self.log.info( 'User and Password are NOT printed.')
-#    self.log.info( '*' * 50 )
+      return S_ERROR( 'Missing mandatory keys on contextConfig %s' % str( missingKeys ) )
     
     return S_OK()  
     

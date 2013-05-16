@@ -189,12 +189,14 @@ class NovaClient:
     bootImageName = self.imageConfig[ 'bootImageName' ]
     flavorName    = self.imageConfig[ 'flavorName' ]
     contextMethod = self.imageConfig[ 'contextMethod' ]
-    cloudDriver = self.endpointConfig[ 'cloudDriver' ]
-    vmPolicy = self.endpointConfig[ 'vmPolicy' ]
-    vmStopPolicy = self.endpointConfig[ 'vmStopPolicy' ]
-    siteName = self.endpointConfig[ 'siteName' ]
-    user = self.endpointConfig[ 'user' ]
-    password = self.endpointConfig[ 'password' ]
+
+#FIXME: The following guys SHOULD NOT BE HERE !    
+#    cloudDriver = self.endpointConfig[ 'cloudDriver' ]
+#    vmPolicy = self.endpointConfig[ 'vmPolicy' ]
+#    vmStopPolicy = self.endpointConfig[ 'vmStopPolicy' ]
+#    siteName = self.endpointConfig[ 'siteName' ]
+#    user = self.endpointConfig[ 'user' ]
+#    password = self.endpointConfig[ 'password' ]
     
     # Optional node contextualization parameters
     keyname  = self.imageConfig[ 'contextConfig' ].get( 'ex_keyname' , None )
@@ -240,13 +242,15 @@ class NovaClient:
 
     try:
       if contextMethod == 'amiconfig':
-        vmNode = self.__driver.create_node(   name               = vm_name, 
+        vmNode = self.__driver.create_node( name               = vm_name, 
                                             image              = bootImage, 
                                             size               = flavor,
                                             ex_keyname         = keyname,
                                             ex_userdata        = userdata,
                                             ex_security_groups = secGroup,
                                             ex_metadata        = metadata )
+      #FIXME: this is a bit of a non-sense
+      #Simply leave the options in the CS empty   
       else:
         vmNode = self.__driver.create_node( name                        = vm_name,
                                             image                       = bootImage,

@@ -81,11 +81,11 @@ class NovaConfiguration( EndpointConfiguration ):
 
     # Purely endpoint configuration ............................................              
     # This two are passed as arguments, not keyword arguments
-    self.__user                    = novaOptions.get( 'user'               , None )
-    self.__password                = novaOptions.get( 'password'           , None )
+    self.__user                    = novaOptions.get( 'user'             , None )
+    self.__password                = novaOptions.get( 'password'         , None )
 
-    self.__cloudDriver             = novaOptions.get( 'cloudDriver'         , None )
-    self.__vmStopPolicy            = novaOptions.get( 'vmStopPolicy'         , None )
+    self.__cloudDriver             = novaOptions.get( 'cloudDriver'      , None )
+    self.__vmStopPolicy            = novaOptions.get( 'vmStopPolicy'     , None )
     self.__vmPolicy                = novaOptions.get( 'vmPolicy'         , None )
     self.__siteName                = novaOptions.get( 'siteName'         , None )
     
