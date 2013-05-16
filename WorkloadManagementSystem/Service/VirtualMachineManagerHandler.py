@@ -13,8 +13,6 @@
 
 """
 
-from types import DictType, FloatType, IntType, ListType, LongType, StringType, TupleType, UnicodeType
-
 # DIRAC
 from DIRAC                                import gConfig, gLogger, S_ERROR, S_OK
 from DIRAC.Core.DISET.RequestHandler      import RequestHandler
@@ -30,6 +28,7 @@ __RCSID__ = '$Id: $'
 # This is a global instance of the VirtualMachineDB class
 gVirtualMachineDB = False
 
+
 def initializeVirtualMachineManagerHandler( _serviceInfo ):
 
   global gVirtualMachineDB
@@ -43,20 +42,13 @@ def initializeVirtualMachineManagerHandler( _serviceInfo ):
   
   return S_ERROR()
 
+
 class VirtualMachineManagerHandler( RequestHandler ):
 
-  def initialize( self ):
 
-# FIXME: is all this actually used ????       
-#    credDict = self.getRemoteCredentials()  
-#    self.ownerDN              = credDict[ 'DN' ]
-#    self.ownerGroup           = credDict[ 'group' ]
-#    self.userProperties       = credDict[ 'properties' ]
-#    self.owner                = credDict[ 'username' ]
-#    self.peerUsesLimitedProxy = credDict[ 'isLimitedProxy' ]
-#    
-#    self.diracSetup           = self.serviceInfoDict[ 'clientSetup' ]
-    pass
+  def __init__( self, *args, **kwargs ):
+    super( VirtualMachineManagerHandler, self ).__init__( *args, **kwargs )
+
 
   @staticmethod
   def __logResult( methodName, result ):
@@ -67,7 +59,7 @@ class VirtualMachineManagerHandler( RequestHandler ):
       gLogger.error( '%s%s' % ( methodName, result[ 'Message' ] ) )  
 
 
-  types_insertInstance = [ StringType, ( StringType, UnicodeType ), ]
+  types_insertInstance = [ str, ( str, unicode ), ]
   def export_insertInstance( self, imageName, instanceName, endpoint, runningPodName ):
     """
     Check Status of a given image
@@ -79,7 +71,7 @@ class VirtualMachineManagerHandler( RequestHandler ):
     return res
 
 
-  types_setInstanceUniqueID = [ LongType, ( StringType, UnicodeType ) ]
+  types_setInstanceUniqueID = [ long, ( str, unicode ) ]
   def export_setInstanceUniqueID( self, instanceID, uniqueID ):
     """
     Check Status of a given image
@@ -90,7 +82,8 @@ class VirtualMachineManagerHandler( RequestHandler ):
     
     return res
   
-  types_declareInstanceSubmitted = [ StringType ]
+  
+  types_declareInstanceSubmitted = [ str ]
   def export_declareInstanceSubmitted( self, uniqueID ):
     """
     After submission of the instance the Director should declare the new Status
@@ -101,7 +94,7 @@ class VirtualMachineManagerHandler( RequestHandler ):
     return res
 
 
-  types_declareInstanceRunning = [ StringType, StringType ]
+  types_declareInstanceRunning = [ str, str ]
   def export_declareInstanceRunning( self, uniqueID, privateIP ):
     """
     Declares an instance Running and sets its associated info (uniqueID, publicIP, privateIP)
@@ -117,9 +110,8 @@ class VirtualMachineManagerHandler( RequestHandler ):
     return res
 
 
-  types_instanceIDHeartBeat = [ StringType, FloatType, ( IntType, LongType ),
-                               ( IntType, LongType ), ( IntType, LongType ) ]
-  def export_instanceIDHeartBeat( self, uniqueID, load, jobs,
+  types_instanceIDHeartBeat = [ str, float, ( int, long ), ( int, long ), ( int, long ) ]
+  def export_instanceIDHeartBeat( self, uniqueID, load, jobs, 
                                   transferredFiles, transferredBytes, uptime = 0 ):
     """
     Insert the heart beat info from a running instance
@@ -139,7 +131,8 @@ class VirtualMachineManagerHandler( RequestHandler ):
     
     return res
     
-  types_declareInstancesStopping = [ ListType ]
+    
+  types_declareInstancesStopping = [ list ]
   def export_declareInstancesStopping( self, instanceIdList ):
     """
     Declares "Stoppig" the instance because the Delete button of Browse Instances
@@ -184,7 +177,8 @@ class VirtualMachineManagerHandler( RequestHandler ):
 
     return result
 
-  types_declareInstanceHalting = [ StringType, FloatType ]
+
+  types_declareInstanceHalting = [ str, float ]
   def export_declareInstanceHalting( self, uniqueID, load, cloudDriver ):
     """
     Insert the heart beat info from a halting instance
@@ -239,7 +233,8 @@ class VirtualMachineManagerHandler( RequestHandler ):
     self.__logResult( 'declareInstanceHalting: ', result )
     return result
 
-  types_getInstancesByStatus = [ StringType ]
+
+  types_getInstancesByStatus = [ str ]
   def export_getInstancesByStatus( self, status ):
     """
     Get dictionary of Image Names with InstanceIDs in given status 
@@ -250,7 +245,7 @@ class VirtualMachineManagerHandler( RequestHandler ):
     return res
 
 
-  types_getAllInfoForUniqueID = [ StringType ]
+  types_getAllInfoForUniqueID = [ str ]
   def export_getAllInfoForUniqueID( self, uniqueID ):
     """
     Get all the info for a UniqueID
@@ -261,8 +256,7 @@ class VirtualMachineManagerHandler( RequestHandler ):
     return res
 
 
-  types_getInstancesContent = [ DictType, ( ListType, TupleType ),
-                                ( IntType, LongType ), ( IntType, LongType ) ]
+  types_getInstancesContent = [ dict, ( list, tuple ), ( int, long ), ( int, long ) ]
   def export_getInstancesContent( self, selDict, sortDict, start, limit ):
     """
     Retrieve the contents of the DB
@@ -273,7 +267,7 @@ class VirtualMachineManagerHandler( RequestHandler ):
     return res
 
 
-  types_getHistoryForInstanceID = [ ( IntType, LongType ) ]
+  types_getHistoryForInstanceID = [ ( int, long ) ]
   def export_getHistoryForInstanceID( self, instanceId ):
     """
     Retrieve the contents of the DB
@@ -295,7 +289,7 @@ class VirtualMachineManagerHandler( RequestHandler ):
     return res
 
   
-  types_getHistoryValues = [ IntType, DictType  ]
+  types_getHistoryValues = [ int, dict ]
   def export_getHistoryValues( self, averageBucket, selDict, fields2Get = [], timespan = 0 ):
     """
     Retrieve the contents of the DB
@@ -306,7 +300,7 @@ class VirtualMachineManagerHandler( RequestHandler ):
     return res
 
 
-  types_getRunningInstancesHistory = [ IntType, IntType ]
+  types_getRunningInstancesHistory = [ int, int ]
   def export_getRunningInstancesHistory( self, timespan, bucketSize ):
     """
     Retrieve number of running instances in each bucket
@@ -317,7 +311,7 @@ class VirtualMachineManagerHandler( RequestHandler ):
     return res
 
 
-  types_getRunningInstancesBEPHistory = [ IntType, IntType ]
+  types_getRunningInstancesBEPHistory = [ int, int ]
   def export_getRunningInstancesBEPHistory( self, timespan, bucketSize ):
     """
     Retrieve number of running instances in each bucket
