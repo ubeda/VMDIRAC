@@ -1,15 +1,27 @@
+# $HeadURL$
+"""
+  virtualmachines
+  
+  VMDIRAC web views controller
+"""
+
 import logging
-
-import types
 import simplejson
-from dirac.lib.base import *
-from dirac.lib.diset import getRPCClient, getTransferClient
+import types
 
-from DIRAC import S_OK, S_ERROR, gLogger
-from DIRAC.Core.Utilities import Time, List
-from DIRAC.AccountingSystem.Client.ReportsClient import ReportsClient
+from dirac.lib.base  import *
+from dirac.lib.diset import getRPCClient
+
+# DIRAC
+from DIRAC                                       import S_OK, S_ERROR
+from DIRAC.Core.Utilities                        import Time
+
+# DIRACWeb
 from dirac.lib.webBase import defaultRedirect
 
+__RCSID__ = '$Id: $'
+
+# FIXME: why logging instead of gLogger ?
 log = logging.getLogger( __name__ )
 
 class VirtualmachinesController( BaseController ):
