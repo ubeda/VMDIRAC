@@ -99,6 +99,7 @@ class NovaImage:
     self.log.info( "Booting %s / %s" % ( self.__imageConfig.config()[ 'bootImageName' ],
                                          self.__novaConfig.config()[ 'ex_force_auth_url' ] ) )
 
+#    result = self.__clinova.create_VMInstance( vmdiracInstanceID )
     result = self.__clinova.create_VMInstance( vmdiracInstanceID )
 
     if not result[ 'OK' ]:

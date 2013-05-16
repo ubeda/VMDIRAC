@@ -166,7 +166,8 @@ class NovaClient:
       
     return S_OK( [ secGroup for secGroup in secGroups if secGroup.name in securityGroupNames ] )   
 
-  def create_VMInstance( self, vmdiracInstanceID = None ):
+#  def create_VMInstance( self, vmdiracInstanceID = None ):
+  def create_VMInstance( self ):
     """
     This creates a VM instance for the given boot image 
     and creates a context script, taken the given parameters.
@@ -208,8 +209,8 @@ class NovaClient:
       with open( userdata, 'r' ) as userDataFile: 
         userdata = ''.join( userDataFile.readlines() )
     
-    if vmdiracInstanceID is not None:
-      metadata.update( { 'vmdiracid' : str( vmdiracInstanceID ) } )
+#    if vmdiracInstanceID is not None:
+#      metadata.update( { 'vmdiracid' : str( vmdiracInstanceID ) } )
     
     bootImage = self.get_image( bootImageName )
     if not bootImage[ 'OK' ]:
