@@ -100,7 +100,7 @@ class NovaImage:
                                          self.__novaConfig.config()[ 'ex_force_auth_url' ] ) )
 
 #    result = self.__clinova.create_VMInstance( vmdiracInstanceID )
-    result = self.__clinova.create_VMInstance( vmdiracInstanceID )
+    result = self.__clinova.create_VMInstance()
 
     if not result[ 'OK' ]:
       self.log.error( "startNewInstance" )
