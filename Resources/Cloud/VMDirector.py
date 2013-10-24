@@ -88,7 +88,7 @@ class VMDirector:
       self.runningPods[runningPodName]['Priority']         = int( runningPodDict['Priority'] )
       self.runningPods[runningPodName]['CloudEndpoints']   = runningPodDict['CloudEndpoints']
 
-  def submitInstance( self, imageName, workDir, endpoint, numVMsToSubmit, runningPodName ):
+  def submitInstance( self, imageName, endpoint, numVMsToSubmit, runningPodName ):
     """
     """
     # warning: instanceID is the DIRAC instance id, while uniqueID is unique for a particular endpoint
@@ -111,7 +111,12 @@ class VMDirector:
         return newInstance
       instanceID = newInstance[ 'Value' ]
 
-      dictVMSubmitted = self._submitInstance( imageName, workDir, endpoint, instanceID )
+      runningRequirementsDict = self.runningPods[runningPodName]['RequirementsDict']
+      cpuTime = runningRequirementsDict['CPUTime']
+      if not cpuTime:
+        return S_ERROR( 'Unknown CPUTime in Requirements of the RunningPod %s' % runningPodName )
+
+      dictVMSubmitted = self._submitInstance( imageName, endpoint, cpuTime, instanceID )
       if not dictVMSubmitted[ 'OK' ]:
         return dictVMSubmitted
 
@@ -123,7 +128,7 @@ class VMDirector:
       if driver == "CloudStack":
         virtualMachineDB.insertInstance( imageName, imageName, endpoint, runningPodName )
 
-      if driver == "nova-1.1":
+      if driver == "nova-1.1" or driver =="rocci-1.1":
         ( uniqueID, publicIP ) = dictVMSubmitted['Value']
         dictVMDBrecord = virtualMachineDB.setPublicIP( instanceID, publicIP )
         if not dictVMDBrecord['OK']:
@@ -140,32 +145,20 @@ class VMDirector:
       if driver == "CloudStack":
         virtualMachineDB.setInstanceUniqueID( str( int( instanceID ) + 1 ), str( int( uniqueID ) - 1 ) )
 
-      if not ( driver == "nova-1.1" ):
-        dictVMDBrecord = virtualMachineDB.declareInstanceSubmitted( uniqueID )
+      # check contextMethod and update status if need ssh contextualization:
+      contextMethod = gConfig.getValue( "/Resources/VirtualMachines/Images/%s/%s" % ( imageName, "contextMethod" ) )
+      if contextMethod == 'ssh':
+        dictVMDBrecord = virtualMachineDB.declareInstanceWait_ssh_context( uniqueID )
         if not dictVMDBrecord['OK']:
           return dictVMDBrecord
       else:
-        # if nova driver then check contextMethod and update status if need ssh contextualization:
-        contextMethod = gConfig.getValue( "/Resources/VirtualMachines/Images/%s/%s" % ( imageName, "contextMethod" ) )
-        if contextMethod == 'ssh':
-          dictVMDBrecord = virtualMachineDB.declareInstanceWait_ssh_context( uniqueID )
-          if not dictVMDBrecord['OK']:
-            return dictVMDBrecord
-        else:
-          # if nova driver then check contextMethod and update status if need ssh contextualization:
-          contextMethod = gConfig.getValue( "/Resources/VirtualMachines/Images/%s/%s" % ( imageName, "contextMethod" ) )
-          if contextMethod == 'ssh':
-            dictVMDBrecord = virtualMachineDB.declareInstanceWait_ssh_context( uniqueID )
-            if not dictVMDBrecord['OK']:
-              return dictVMDBrecord
-          else:
-            dictVMDBrecord = virtualMachineDB.declareInstanceSubmitted( uniqueID )
-            if not dictVMDBrecord['OK']:
-              return dictVMDBrecord
+        dictVMDBrecord = virtualMachineDB.declareInstanceSubmitted( uniqueID )
+        if not dictVMDBrecord['OK']:
+          return dictVMDBrecord
 
-        #########CloudStack check to preaty feature
-        if driver == "CloudStack":
-          dictVMDBrecord = virtualMachineDB.declareInstanceSubmitted( str( int( uniqueID ) - 1 ) )
+      #########CloudStack check to preaty feature
+      if driver == "CloudStack":
+        dictVMDBrecord = virtualMachineDB.declareInstanceSubmitted( str( int( uniqueID ) - 1 ) )
 
     return S_OK( imageName )
 

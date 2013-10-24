@@ -51,6 +51,149 @@ class EndpointConfiguration( object ):
 
 #...............................................................................
 
+class OcciConfiguration( EndpointConfiguration ):
+  """
+  OcciConfiguration Class parses the section <occiEndpoint> 
+  and builds a configuration if possible, with the information obtained from the CS.
+  """
+
+  # Keys that MUST be present on ANY Occi CloudEndpoint configuration in the CS
+  MANDATORY_KEYS = [ 'cloudDriver', 'vmPolicy', 'vmStopPolicy', 'siteName', 'occiURI', 'maxEndpointInstances', 'auth', 'iface' ]
+    
+  def __init__( self, occiEndpoint ):
+    """
+    Constructor
+    
+    :Parameters:
+      **occiEndpoint** - `string`
+        string with the name of the CloudEndpoint defined on the CS
+    """
+    super( OcciConfiguration, self ).__init__() 
+      
+    occiOptions = gConfig.getOptionsDict( '%s/%s' % ( self.ENDPOINT_PATH, occiEndpoint ) )
+    if not occiOptions[ 'OK' ]:
+      self.log.error( occiOptions[ 'Message' ] )
+      occiOptions = {}
+    else:
+      occiOptions = occiOptions[ 'Value' ] 
+
+    # FIXME: make it generic !
+
+    # Purely endpoint configuration ............................................              
+    # This two are passed as arguments, not keyword arguments
+    self.__auth                    = occiOptions.get( 'auth'                    , None )
+    self.__user                    = occiOptions.get( 'user'                    , None )
+    self.__password                = occiOptions.get( 'password'                , None )
+    self.__userCredPath            = occiOptions.get( 'userCredPath'            , None )
+    self.__proxyCaPath             = occiOptions.get( 'proxyCaPath'             , None )
+
+    self.__cloudDriver             = occiOptions.get( 'cloudDriver'             , None )
+    self.__vmStopPolicy            = occiOptions.get( 'vmStopPolicy'            , None )
+    self.__vmPolicy                = occiOptions.get( 'vmPolicy'                , None )
+    self.__siteName                = occiOptions.get( 'siteName'                , None )
+    self.__maxEndpointInstances    = occiOptions.get( 'maxEndpointInstances'    , None )
+    
+    self.__occiURI                 = occiOptions.get( 'occiURI'                 , None )
+    self.__imageDriver             = occiOptions.get( 'imageDriver'             , None )
+    self.__netId                   = occiOptions.get( 'netId'                   , None )
+    self.__iface                   = occiOptions.get( 'iface'                   , None )
+    self.__dns1                    = occiOptions.get( 'DNS1'                    , None )
+    self.__dns2                    = occiOptions.get( 'DNS2'                    , None )
+    self.__domain                  = occiOptions.get( 'domain'                  , None )
+    self.__cvmfs_http_proxy        = occiOptions.get( 'CVMFS_HTTP_PROXY'        , None )
+    self.__ipPool                  = occiOptions.get( 'ipPool'                  , None )
+
+  def config( self ):
+    
+    config = {}
+    
+    config[ 'auth' ]                    = self.__auth
+    config[ 'user' ]                    = self.__user
+    config[ 'password' ]                = self.__password
+    config[ 'userCredPath' ]            = self.__userCredPath
+    config[ 'proxyCaPath' ]             = self.__proxyCaPath
+
+    config[ 'cloudDriver' ]             = self.__cloudDriver
+    config[ 'vmPolicy' ]                = self.__vmPolicy
+    config[ 'vmStopPolicy' ]            = self.__vmStopPolicy
+    config[ 'siteName' ]                = self.__siteName
+    config[ 'maxEndpointInstances' ]    = self.__maxEndpointInstances
+    config[ 'occiURI' ]                 = self.__occiURI 
+    config[ 'iface' ]                   = self.__iface
+
+    # optionals depending on endpoint/image setup:
+    config[ 'imageDriver' ]             = self.__imageDriver
+    config[ 'netId' ]                   = self.__netId
+    config[ 'dns1' ]                    = self.__dns1
+    config[ 'dns2' ]                    = self.__dns2
+    config[ 'domain' ]                  = self.__domain
+    config[ 'cvmfs_http_proxy' ]        = self.__cvmfs_http_proxy
+    config[ 'ipPool' ]                  = self.__ipPool
+    
+    # Do not return dictionary with None values
+    for key, value in config.items():
+      if value is None:
+        del config[ key ]
+        
+    return config  
+
+  def validate( self ):
+    
+  
+    endpointConfig = self.config()
+
+ 
+    missingKeys = set( self.MANDATORY_KEYS ).difference( set( endpointConfig.keys() ) ) 
+    if missingKeys:
+      return S_ERROR( 'Missing mandatory keys on endpointConfig %s' % str( missingKeys ) )
+    
+    # on top of the MANDATORY_KEYS, we make sure the corresponding auth parameters are set:
+    if self.__auth == 'userpasswd':
+      if self.__user is None:
+        return S_ERROR( 'user is None' )
+      if self.__password is None:
+        return S_ERROR( 'password is None' )
+    elif self.__auth == 'proxycacert':
+      if self.__userCredPath is None:
+        return S_ERROR( 'userCredPath is None' )
+      if self.__proxyCaPath is None:
+        return S_ERROR( 'proxyCaPath is None' )
+    else:
+      return S_ERROR( 'endpoint auth: %s not defined (userpasswd/proxycacert)' % self.__auth)
+    
+    self.log.info( '*' * 50 )
+    self.log.info( 'Displaying endpoint info' )
+    for key, value in endpointConfig.iteritems():
+      if key == 'user':
+        self.log.info( '%s : *********' % ( key ) )
+      elif key == 'password':
+        self.log.info( '%s : *********' % ( key ) )
+      else:
+        self.log.info( '%s : %s' % ( key, value ) )
+    self.log.info( 'User and Password are NOT printed.')
+    self.log.info( '*' * 50 )
+        
+    return S_OK()
+
+  def authConfig( self ):
+    
+    if self.__auth == 'userpasswd':
+      return ( self.__auth, self.__user, self.__password )
+    elif self.__auth == 'proxycacert':
+      return ( self.__auth, self.__userCredPath, self.__proxyCaPath )
+    else:
+      return S_ERROR( 'endpoint auth: %s not defined (userpasswd/proxycacert)' % self.__auth)
+  
+  def cloudDriver( self ):
+    
+    return ( self.__cloudDriver )
+
+  def occiURI( self ):
+    
+    return ( self.__occiURI )
+
+#...............................................................................
+
 class NovaConfiguration( EndpointConfiguration ):
   """
   NovaConfiguration Class parses the section <novaEndpoint> 
@@ -58,6 +201,13 @@ class NovaConfiguration( EndpointConfiguration ):
   """
 
   # Keys that MUST be present on ANY Nova CloudEndpoint configuration in the CS
+  # MANDATORY_KEYS = [ 'ex_force_auth_url', 'ex_force_service_region', 'ex_tenant_name', 
+  # 'vmPolicy' -> I do not think it should be mandatory ( set default value )
+  # 'vmStopPolicy' -> I do not think it should be mandatory ( set default value )
+  # indeed, if both are here, cpuTime should also be here.. or all go to runningPod
+  # 'cloudDriver' -> if we are on the NovaConfiguration... the cloud driver will be ???
+  # 'siteName' -> why do we need the siteName ?
+  # 'maxEndpointInstances' ] -> this one I agree
   MANDATORY_KEYS = [ 'ex_force_auth_url', 'ex_force_service_region', 'ex_tenant_name' ]
     
   def __init__( self, novaEndpoint ):
@@ -210,6 +360,6 @@ class ImageConfiguration( object ):
     self.log.info( '*' * 50 )  
       
     return S_OK()   
-    
+
 #...............................................................................
 #EOF#EOF#EOF#EOF#EOF#EOF#EOF#EOF#EOF#EOF#EOF#EOF#EOF#EOF#EOF#EOF#EOF#EOF#EOF#EOF    
